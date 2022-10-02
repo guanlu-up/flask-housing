@@ -17,3 +17,13 @@ class UsersDB(BaseDB):
         """
         query = self._query.filter(self._model.username == username)
         return query.one() if _raise else query.first()
+
+    def query_by_phone(self, phone_number: str, _raise=False):
+        """ 根据手机号进行查询
+        :param phone_number: 要查找的手机号
+        :param _raise: 如果未查到是否报错
+        :return: Model; self._model
+        """
+        query = self._query.filter(self._model.phone == phone_number)
+        return query.one() if _raise else query.first()
+
