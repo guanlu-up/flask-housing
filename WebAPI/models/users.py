@@ -3,6 +3,10 @@ from werkzeug.security import check_password_hash
 
 from ..extension import db
 from .basic import RecordTimeModel
+from .house import House
+from .order import Order
+
+__all__ = ["User", "House", "Order"]
 
 
 class User(db.Model, RecordTimeModel):
@@ -19,7 +23,7 @@ class User(db.Model, RecordTimeModel):
     id_card = alchemy.Column(alchemy.String(20), doc="身份证号")
     avatar_url = alchemy.Column(alchemy.String(128), doc="用户头像")
 
-    houses = db.relationship("Houses", backref="user")
+    houses = db.relationship("House", backref="user")
     orders = db.relationship("Order", backref="user")
 
     def __init__(
