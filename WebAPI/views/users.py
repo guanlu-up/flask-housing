@@ -4,28 +4,48 @@ from werkzeug.security import generate_password_hash
 
 from ..models import users as users_model
 from ..database.users import UsersDB
+from ..schema.users import UserSchema
 
-users_view = Blueprint("users", __name__, url_prefix="/users")
+USER_SCHEMA = UserSchema()
+users_view = Blueprint("users", __name__, url_prefix="/api/users")
 
 
-@users_view.route("", methods=["GET", "POST"])
+@users_view.route("", methods=["POST"])
 def add_user():
     api = UsersAPI()
-    if request.method == "GET":
-        return api.get_user()
+
     if request.method == "POST":
         return api.create_user()
 
 
-@users_view.route("/<int:user_id>", methods=["PUT", "DELETE"])
-def user_update(user_id):
+@users_view.route("/<int:userid>", methods=["GET", "PUT", "DELETE"])
+def user_update(userid):
     api = UsersAPI()
-    if request.method == "PUT":
-        if "password" in request.json.keys():
-            return api.update_password(user_id)
-        return api.update(user_id)
-    if request.method == "DELETE":
-        return api.delete_user(user_id)
+
+    # 获取用户详细信息
+    if request.method == "GET":
+        user_db = UsersDB()
+        user: users_model.User = user_db.query_by_id(int(userid))
+        if user is None:
+            return {"message": "user not exist!"}, 400
+
+        data = USER_SCHEMA.dump(user)
+        return {"status": 200, "message": "ok", "data": data}
+
+    # 更新用户信息
+    elif request.method == "PUT":
+        params: dict = request.get_json()
+        if "password" in params.keys():
+            if len(params.keys()) == 1:
+                return api.update_password(userid)
+            params.pop("password")
+
+        if params:
+            return api.update(userid, param_mapper=params)
+
+    # 设置用户状态为delete
+    elif request.method == "DELETE":
+        return api.update(userid, {"is_delete": True})
 
 
 class UsersAPI(object):
@@ -33,70 +53,58 @@ class UsersAPI(object):
     def __init__(self):
         self.db = UsersDB()
 
-    def update_password(self, user_id: int):
+    def update_password(self, userid: int):
         """更新用户密码"""
         password = request.json.get("password")
         if password is None:
             return {'message': 'Required param is missing'}, 400
-        user: users_model.User = self.db.query_by_id(user_id)
+        user: users_model.User = self.db.query_by_id(userid)
         if user is None:
-            return {"message": "user_id invalid"}, 400
+            return {"message": "user does not exist"}, 400
         entity, ok = self.db.update(
-            user_id, {"password": generate_password_hash(password)})
+            userid, {"password": generate_password_hash(password)})
         if not ok:
-            return {"status": 400, "message": "update fail"}
+            return {"status": 400, "message": "update password fail!"}
+        data = USER_SCHEMA.dump(entity)
+        return {"status": 200, "message": "success", "data": data}
 
-        return {"status": 200, "message": "success"}
-
-    def update(self, user_id: int):
-        user: users_model.User = self.db.query_by_id(user_id)
-        if user is None:
-            return {"message": "user_id invalid"}, 400
-        param_mapper: dict = request.get_json()
-        if param_mapper:
-            entity, ok = self.db.update(user_id, param_mapper)
-            if not ok:
-                return {"status": 400, "message": "update fail"}
-        return {"status": 200, "message": "success"}
-
-    def get_user(self):
-        """获取用户信息"""
-        _id = request.args.get("id")
-        if _id is None or not str(_id).isdigit():
+    def update(self, userid: int, param_mapper=None):
+        """ 更新用户信息; 如果param_mapper为None则从request.json中获取修改信息"""
+        if not param_mapper or not isinstance(param_mapper, dict):
+            param_mapper: dict = request.get_json()
+        if not param_mapper:
             return {'message': 'Required param is missing'}, 400
 
-        user: users_model.User = self.db.query_by_id(int(_id))
+        user: users_model.User = self.db.query_by_id(userid)
         if user is None:
-            return {"message": "user not exist!"}, 400
-        userinfo = {
-            "username": user.username,
-            "password": user.password,
-            "is_admin": user.is_admin,
-        }
-        return {"status": 200, "message": userinfo}
+            return {"message": "user does not exist"}, 400
+
+        entity, ok = self.db.update(userid, param_mapper)
+        if not ok:
+            return {"status": 400, "message": "update fail!"}
+        data = USER_SCHEMA.dump(entity)
+        return {"status": 200, "message": "success", "data": data}
 
     def create_user(self):
         """创建新用户"""
-        username = request.json.get("username")
-        password = request.json.get("password")
-        is_admin = request.json.get("is_admin")
-        if username is None or password is None or is_admin is None:
+        attributes = ["username", 'password', "phone", "real_name", "id_card"]
+        _json = request.get_json()
+        userinfo = {key: _json.get(key, None) for key in attributes}
+        if not all(userinfo.values()):
             return {'message': 'Required param is missing'}, 400
 
-        user = self.db.query_by_username(username)
+        user = self.db.query_by_username(userinfo["username"])
         if user is not None:
             return {'message': 'user already exist!'}, 400
 
-        self.db.create({
-            "username": username,
-            "password": generate_password_hash(password),
-            "is_admin": is_admin,
-        })
-        return {"status": 200, "message": "success"}
+        user = self.db.query_by_phone(userinfo["phone"])
+        if user is not None:
+            return {'message': '手机号已被使用!'}, 400
 
-    def delete_user(self, user_id: int):
-        """删除用户"""
-        ok = self.db.delete(user_id)
-        if not ok:
-            return {"message": "delete fail!"}, 400
-        return {"status": 200, "message": "success"}
+        userinfo.update(avatar_url=_json.get("avatar_url", None))
+        userinfo.update(is_delete=_json.get("is_delete", False))
+        userinfo.update(is_admin=_json.get("is_admin", False))
+
+        model = self.db.create(userinfo)
+        data = USER_SCHEMA.dump(model)
+        return {"status": 200, "message": "success", "data": data}
