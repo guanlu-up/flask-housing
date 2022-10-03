@@ -9,13 +9,28 @@ class UsersDB(BaseDB):
     def __init__(self):
         super(UsersDB, self).__init__(User)
 
+    def query_by_id(self, _id: int, is_delete=False, _raise=False):
+        """ 根据id进行查询
+        :param _id: 要查找的数据条目id
+        :param is_delete: 过滤用户的delete状态,默认为False
+        :param _raise: 如果未查到是否报错
+        :return: Model; self._model
+        """
+        query = self._query.filter(
+            self._model.id == _id,
+            self._model.is_delete == is_delete,
+        )
+        return query.one() if _raise else query.first()
+
     def query_by_username(self, username: str, _raise=False):
         """ 根据用户名进行查询
         :param username: 要查找的数据条目用户名
         :param _raise: 如果未查到是否报错
         :return: Model; self._model
         """
-        query = self._query.filter(self._model.username == username)
+        query = self._query.filter(
+            self._model.username == username,
+        )
         return query.one() if _raise else query.first()
 
     def query_by_phone(self, phone_number: str, _raise=False):
