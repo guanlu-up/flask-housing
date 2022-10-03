@@ -14,7 +14,7 @@ class BaseDB(object):
         :param model: 自定义的Model类(继承自db.Model)
         """
         self._model = model
-        self._query: Query = self._model.query
+        self._query = self._model.query
 
     def query_by_id(self, _id: int, _raise=False):
         """ 根据id进行查询
