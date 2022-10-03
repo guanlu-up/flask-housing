@@ -1,3 +1,5 @@
+import re
+
 from flask import Blueprint
 from flask import request
 from werkzeug.security import generate_password_hash
@@ -93,6 +95,11 @@ class UsersAPI(object):
         if not all(userinfo.values()):
             return {'message': 'Required param is missing'}, 400
 
+        if not re.match(r"1[34578]\d{9}", userinfo["phone"]):
+            return {"message": "无效的手机号!"}, 400
+        if len(userinfo["id_card"]) != 18:
+            return {"message": "身份证号必须为18位!"}, 400
+
         user = self.db.query_by_username(userinfo["username"])
         if user is not None:
             return {'message': 'user already exist!'}, 400
@@ -101,6 +108,7 @@ class UsersAPI(object):
         if user is not None:
             return {'message': '手机号已被使用!'}, 400
 
+        userinfo["password"] = generate_password_hash(userinfo.pop("password"))
         userinfo.update(avatar_url=_json.get("avatar_url", None))
         userinfo.update(is_delete=_json.get("is_delete", False))
         userinfo.update(is_admin=_json.get("is_admin", False))
