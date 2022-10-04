@@ -4,12 +4,15 @@ from flask_jwt_extended import JWTManager
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 
+from .config import EnvironConfig
+
 # migrate: 数据库迁移
 migrate = Migrate()
 # jwt: 用于token认证
 jwt = JWTManager()
 # 利用flask-session, 把session保存到redis中
 redis_session = Session()
+redis = EnvironConfig.SESSION_REDIS
 # ORM
 db = SQLAlchemy()
 
