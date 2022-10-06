@@ -10,7 +10,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..database.users import UsersDB
 from ..schema.users import UserSchema
 from ..extension import redis
-from ..constants import AUTH
+from ..constants import Auth
 
 auth_view = Blueprint("auth", __name__, url_prefix="/api")
 
@@ -25,7 +25,7 @@ def login():
     if not re.match(r"1[34578]\d{9}", phone):
         return {"message": "手机号格式不正确!"}, 400
     retry_times = redis.get(f"login_retry_{phone}")
-    if retry_times is not None and int(retry_times) >= AUTH.RETRY_TIMES_MAX:
+    if retry_times is not None and int(retry_times) >= Auth.RETRY_TIMES_MAX:
         return {"message": "重试次数过多,请稍后再试!"}, 400
 
     user_db = UsersDB()
@@ -33,7 +33,7 @@ def login():
     if user is None or user.is_delete is True or not user.verify_password(password):
         if retry_times is None:
             retry_times = 0
-        redis.setex(f"login_retry_{phone}", AUTH.ACCOUNT_LOCKOUT_TIME, int(retry_times) + 1)
+        redis.setex(f"login_retry_{phone}", Auth.ACCOUNT_LOCKOUT_TIME, int(retry_times) + 1)
         return {"message": "手机号或密码错误!"}, 400
     if retry_times:
         redis.delete(f"login_retry_{phone}")
