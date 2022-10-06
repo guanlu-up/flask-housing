@@ -28,7 +28,7 @@ def user_update(userid):
     if request.method == "GET":
         user_db = UsersDB()
         user: users_model.User = user_db.query_by_id(int(userid))
-        if user is None:
+        if user is None or user.is_delete:
             return {"message": "user not exist!"}, 400
 
         data = USER_SCHEMA.dump(user)
@@ -61,7 +61,7 @@ class UsersAPI(object):
         if password is None:
             return {'message': 'Required param is missing'}, 400
         user: users_model.User = self.db.query_by_id(userid)
-        if user is None:
+        if user is None or user.is_delete:
             return {"message": "user does not exist"}, 400
         entity, ok = self.db.update(
             userid, {"password": generate_password_hash(password)})
