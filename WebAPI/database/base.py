@@ -14,7 +14,7 @@ class BaseDB(object):
         :param model: 自定义的Model类(继承自db.Model)
         """
         self._model = model
-        self._query = self._model.query
+        self._query: Query = self._model.query
 
     def query_by_id(self, _id: int, _raise=False):
         """ 根据id进行查询
@@ -24,6 +24,10 @@ class BaseDB(object):
         """
         query: Query = self._query.filter_by(id=_id)
         return query.one() if _raise else query.first()
+
+    def query_all(self):
+        """查询当前表中所有数据"""
+        return self._query.all()
 
     def update(self, _id: int, mapper: dict, **kwargs):
         """ 根据id查询,更新目标条目的字段值
