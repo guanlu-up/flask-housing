@@ -1,4 +1,4 @@
-class AUTH(object):
+class Auth(object):
 
     # 登录重试次数
     RETRY_TIMES_MAX = 5
