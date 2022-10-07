@@ -44,7 +44,7 @@ class House(db.Model, RecordTimeModel):
     unit = alchemy.Column(alchemy.String(32), default="", doc="房屋单元,如:一室一厅")
     capacity = alchemy.Column(alchemy.Integer, default=1, doc="房屋容纳的人数")
     beds = alchemy.Column(alchemy.String(64), default="", doc="房屋床铺的配置")
-    deposit = alchemy.Column(alchemy.Integer, default=0, doc="房屋的押金")
+    deposit = alchemy.Column(alchemy.Integer, default=0, doc="房屋的押金,单位:分")
     min_days = alchemy.Column(alchemy.Integer, default=1, doc="最少入住天数")
     max_days = alchemy.Column(alchemy.Integer, default=0, doc="最多入住天数, 0表示不限制")
     order_count = alchemy.Column(alchemy.Integer, default=0, doc="当前房屋已经完成预定的订单数")
