@@ -16,14 +16,11 @@ class BaseDB(object):
         self._model = model
         self._query: Query = self._model.query
 
-    def query_by_id(self, _id: int, _raise=False):
+    def query_by_id(self, _id: int):
         """ 根据id进行查询
-        :param _id: 要查找的数据条目id
-        :param _raise: 如果未查到是否报错
         :return: Model; self._model
         """
-        query: Query = self._query.filter_by(id=_id)
-        return query.one() if _raise else query.first()
+        return self._query.get(_id)
 
     def query_all(self):
         """查询当前表中所有数据"""
