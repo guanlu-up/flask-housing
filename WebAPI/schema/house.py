@@ -6,6 +6,16 @@ class CityAreaSchema(Schema):
     name = fields.String()
 
 
+class FacilitySchema(Schema):
+    id = fields.Integer()
+    name = fields.String()
+
+
+class HouseImageSchema(Schema):
+    id = fields.Integer()
+    url = fields.String()
+
+
 class HouseSchema(Schema):
     id = fields.Integer()
     title = fields.String()
@@ -22,12 +32,4 @@ class HouseSchema(Schema):
     order_count = fields.Integer()
     image_url = fields.String()
 
-
-class FacilitySchema(Schema):
-    id = fields.Integer()
-    name = fields.String()
-
-
-class HouseImageSchema(Schema):
-    id = fields.Integer()
-    url = fields.String()
+    facilities = fields.List(fields.Nested(FacilitySchema()))
