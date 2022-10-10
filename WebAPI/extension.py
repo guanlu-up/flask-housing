@@ -11,7 +11,7 @@ migrate = Migrate()
 # jwt: 用于token认证
 jwt = JWTManager()
 # 利用flask-session, 把session保存到redis中
-redis_session = Session()
+flask_redis = Session()
 redis = EnvironConfig.SESSION_REDIS
 # ORM
 db = SQLAlchemy()
@@ -22,4 +22,4 @@ def extension_register(app: Flask):
     # db.app = app
     migrate.init_app(app, db)
     jwt.init_app(app)
-    redis_session.init_app(app)
+    flask_redis.init_app(app)
