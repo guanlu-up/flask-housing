@@ -2,9 +2,11 @@ import datetime
 
 import redis
 
+LOCALHOST = "100.100.28.253"
+
 
 class DATABASE(object):
-    HOST = "192.168.0.105"
+    HOST = LOCALHOST
     PORT = "3306"
     USERNAME = "root"
     PASSWORD = "root123"
@@ -21,7 +23,7 @@ class EnvironConfig(object):
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(days=1)
 
-    REDIS_HOST = "192.168.0.105"
+    REDIS_HOST = LOCALHOST
     REDIS_PORT = 6379
 
     SESSION_TYPE = "redis"
