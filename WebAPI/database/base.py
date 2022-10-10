@@ -14,17 +14,17 @@ class BaseDB(object):
         :param model: 自定义的Model类(继承自db.Model)
         """
         self._model = model
-        self._query: Query = self._model.query
+        self.query: Query(model) = self._model.query
 
     def query_by_id(self, _id: int):
         """ 根据id进行查询
         :return: Model; self._model
         """
-        return self._query.get(_id)
+        return self.query.get(_id)
 
     def query_all(self):
         """查询当前表中所有数据"""
-        return self._query.all()
+        return self.query.all()
 
     def update(self, _id: int, mapper: dict, **kwargs):
         """ 根据id查询,更新目标条目的字段值
@@ -38,7 +38,7 @@ class BaseDB(object):
                      if isinstance(key, Column) or hasattr(self._model, key)}
         if not keymapper:
             return None, False
-        query: Query = self._query.filter_by(id=_id)
+        query: Query = self.query.filter_by(id=_id)
         query.update(keymapper, synchronize_session="fetch")
         session.commit()
         return query.first(), True
@@ -61,3 +61,10 @@ class BaseDB(object):
         session.delete(model)
         session.commit()
         return True
+
+    def order_by(self, *clauses, limit=None):
+        """排序并限制输出数量"""
+        orderby = self.query.order_by(*clauses)
+        if limit is not None:
+            return orderby.limit(limit).all()
+        return orderby.all()
