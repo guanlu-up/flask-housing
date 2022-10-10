@@ -1,9 +1,15 @@
+import json
+
 from flask import Blueprint
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from ..database.house import CityAreaDB, HouseDB, Facility
-from ..schema.house import HouseSchema
+from ..database.users import UsersDB
+from ..models.house import House as HouseModel
+from ..schema.house import HouseSchema, HouseAllSchema
+from ..constants import Houses as HouseCons
+from ..extension import redis
 
 
 house_view = Blueprint("house", __name__, url_prefix="/api/house")
@@ -40,7 +46,40 @@ def house_action():
 
         house_db = HouseDB()
         house_model = house_db.create(column_mapper=columns)
-        house_schema = HouseSchema()
+        house_schema = HouseAllSchema()
         data = house_schema.dump(house_model)
         return {"status": 200, "message": "success", "data": data}
 
+
+@house_view.route("/user", methods=["GET"])
+@jwt_required()
+def user_houses():
+    """返回当前用户所发布的所有房源信息"""
+
+    identity: dict = get_jwt_identity()
+    user_db = UsersDB()
+    current_user = user_db.query_by_id(identity["userid"])
+    house_schema = HouseAllSchema()
+    data = [house_schema.dump(house) for house in current_user.houses]
+    return {"status": 200, "message": "success", "data": data}
+
+
+@house_view.route("/hot", methods=["GET"])
+@jwt_required()
+def hot_sale_housing():
+    """返回当前销量最好的房源"""
+
+    # 先查询redis, 如果redis中存在则直接返回
+    response = redis.get(HouseCons.HOT_HOUSES_SIGN)
+    if response is not None:
+        return response, 200, {"Content-Type": "application/json"}
+
+    limit = request.args.get("limit", HouseCons.HOT_HOUSES_LIMIT)
+    db, schema = HouseDB(), HouseSchema()
+    houses = db.order_by(HouseModel.order_count.desc(), limit=limit)
+    data = [schema.dump(house) for house in houses]
+    response = {"status": 200, "message": "success", "data": data}
+
+    # 将房源信息暂时存储在redis
+    redis.setex(HouseCons.HOT_HOUSES_SIGN, HouseCons.HOT_HOUSES_TIME, json.dumps(response))
+    return response
