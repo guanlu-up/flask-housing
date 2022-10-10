@@ -15,7 +15,7 @@ class UsersDB(BaseDB):
         :param _raise: 如果未查到是否报错
         :return: Model; self._model
         """
-        query = self._query.filter_by(username=username)
+        query = self.query.filter_by(username=username)
         return query.one() if _raise else query.first()
 
     def query_by_phone(self, phone_number: str, _raise=False):
@@ -24,5 +24,5 @@ class UsersDB(BaseDB):
         :param _raise: 如果未查到是否报错
         :return: Model; self._model
         """
-        query = self._query.filter_by(phone=phone_number)
+        query = self.query.filter_by(phone=phone_number)
         return query.one() if _raise else query.first()
