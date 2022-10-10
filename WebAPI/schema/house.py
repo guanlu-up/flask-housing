@@ -31,5 +31,8 @@ class HouseSchema(Schema):
     max_days = fields.Integer()
     order_count = fields.Integer()
     image_url = fields.String()
+    start_time = fields.DateTime("%Y-%m-%d %H:%M:%S")
 
+
+class HouseAllSchema(HouseSchema):
     facilities = fields.List(fields.Nested(FacilitySchema()))
