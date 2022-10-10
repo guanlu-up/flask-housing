@@ -19,7 +19,7 @@ def current_areas():
     查询到数据后再重新保存到redis中, 最后将结果返回"""
     response = redis.get("city_areas")
     if response is not None:
-        return response
+        return response, 200, {"Content-Type": "application/json"}
 
     db = CityAreaDB()
     schema = CityAreaSchema()
@@ -29,4 +29,4 @@ def current_areas():
     response = {"status": 200, "message": "success", "data": data}
     response = json.dumps(response, ensure_ascii=False)
     redis.setex("city_areas", Versatile.CITY_AREAS_TIME, response)
-    return response
+    return response, 200, {"Content-Type": "application/json"}
