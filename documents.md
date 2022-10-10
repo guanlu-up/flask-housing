@@ -17,3 +17,14 @@ flask db upgrade
 - 使用 `flask db upgrade` 后, migrate会在当前项目指定的数据库中的alembic_version表里自动更新一条记录
 - 这个表中永远是只有一条记录,保存的是最近一次执行migrate后所保留的版本号(可在 project/migrations/versions 中找到)
 ---
+
+## celery
+
+```shell
+# 启动celery服务:
+celery -A WebAPI.celerytask.application worker -l info
+
+# -A WebAPI.celerytask.application : 指定celery app所在的文件路径
+# worker : 指定工作方式
+# -l info : 输出日志, info级别及以上
+```
