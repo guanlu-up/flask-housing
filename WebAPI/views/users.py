@@ -6,9 +6,8 @@ from werkzeug.security import generate_password_hash
 
 from ..models import users as users_model
 from ..database.users import UsersDB
-from ..schema.users import UserSchema
+from ..schema.users import UserSchema, UserFullSchema
 
-USER_SCHEMA = UserSchema()
 users_view = Blueprint("users", __name__, url_prefix="/api/users")
 
 
@@ -31,7 +30,8 @@ def user_update(userid):
         if user is None or user.is_delete:
             return {"message": "user not exist!"}, 400
 
-        data = USER_SCHEMA.dump(user)
+        schema = UserFullSchema()
+        data = schema.dump(user)
         return {"status": 200, "message": "ok", "data": data}
 
     # 更新用户信息
@@ -67,7 +67,8 @@ class UsersAPI(object):
             userid, {"password": generate_password_hash(password)})
         if not ok:
             return {"status": 400, "message": "update password fail!"}
-        data = USER_SCHEMA.dump(entity)
+        schema = UserSchema()
+        data = schema.dump(entity)
         return {"status": 200, "message": "success", "data": data}
 
     def update(self, userid: int, param_mapper=None):
@@ -84,7 +85,8 @@ class UsersAPI(object):
         entity, ok = self.db.update(userid, param_mapper)
         if not ok:
             return {"status": 400, "message": "update fail!"}
-        data = USER_SCHEMA.dump(entity)
+        schema = UserSchema()
+        data = schema.dump(entity)
         return {"status": 200, "message": "success", "data": data}
 
     def create_user(self):
@@ -113,6 +115,5 @@ class UsersAPI(object):
         userinfo.update(is_delete=_json.get("is_delete", False))
         userinfo.update(is_admin=_json.get("is_admin", False))
 
-        model = self.db.create(userinfo)
-        data = USER_SCHEMA.dump(model)
-        return {"status": 200, "message": "success", "data": data}
+        self.db.create(userinfo)
+        return {"status": 200, "message": "success"}
