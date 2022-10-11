@@ -1,5 +1,7 @@
 from marshmallow import Schema, fields
 
+from .users import UserSchema
+
 
 class CityAreaSchema(Schema):
     id = fields.Integer()
@@ -12,6 +14,8 @@ class FacilitySchema(Schema):
 
 
 class HouseImageSchema(Schema):
+    start_time = fields.DateTime("%Y-%m-%d %H:%M:%S")
+    update_time = fields.DateTime("%Y-%m-%d %H:%M:%S")
     id = fields.Integer()
     url = fields.String()
 
@@ -32,7 +36,9 @@ class HouseSchema(Schema):
     order_count = fields.Integer()
     image_url = fields.String()
     start_time = fields.DateTime("%Y-%m-%d %H:%M:%S")
+    update_time = fields.DateTime("%Y-%m-%d %H:%M:%S")
 
 
-class HouseAllSchema(HouseSchema):
+class HouseFullSchema(HouseSchema):
     facilities = fields.List(fields.Nested(FacilitySchema()))
+    user = fields.Nested(UserSchema())
