@@ -6,7 +6,7 @@ docker run -it --rm \
   -p 8001:8001 \
   --name flask-homeapp \
   --network app-dev \
-  myflaskapp \
+  flaskhomeapp \
   /bin/bash
 
 # 运行mysql镜像服务,将数据映射到本地

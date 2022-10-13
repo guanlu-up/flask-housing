@@ -1,3 +1,12 @@
+## Dockerfile
+```shell
+$ pwd
+/root/Flask-HomeApp
+
+$ docker build -t flaskhomeapp .
+```
+---
+
 ## migrations
 ### step:
 先将flask实例所在的文件路径绑定到FLASK_APP系统变量中
