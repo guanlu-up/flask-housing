@@ -7,14 +7,13 @@ from ..models import session
 
 class BaseDB(object):
     """base class; 数据库查询"""
-    _model = None
 
     def __init__(self, model):
         """
         :param model: 自定义的Model类(继承自db.Model)
         """
         self._model = model
-        self.query: Query(model) = self._model.query
+        self.query = self._model.query
 
     def query_by_id(self, _id: int):
         """ 根据id进行查询
