@@ -55,6 +55,11 @@ class House(db.Model, RecordTimeModel):
     images = db.relationship("HouseImage")   # 房屋的图片
     orders = db.relationship("Order", backref="house")  # 房屋的订单
 
+    def change_unit(self):
+        self.price /= 100
+        self.deposit /= 100
+        return self
+
 
 class Facility(db.Model, RecordTimeModel):
     """房屋设施 Table"""
